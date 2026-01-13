@@ -135,7 +135,7 @@ public class Liskcov {
 
                 case 6 -> {
                     System.out.println("\n--- BALANCES ---");
-                    System.out.println("Saving Account: " + savingAccount.getBalance());
+                    System.out.println("Saving Account: " + savingAccount.getBalance()); //  we can also use varibale here no issue
                     System.out.println("Current Account: " + currentAccount.getBalance());
                     System.out.println("Fixed Deposit Account: " + fdAccount.getBalance());
                 }
