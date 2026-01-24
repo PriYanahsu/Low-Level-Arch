@@ -27,8 +27,10 @@ class ATM {
         if (this.balance >= amount) {
             this.balance -= amount;
             System.out.println("Amount withdrawn successfully...................... " + amount);
+            return;
         } else {
             System.out.println("Insufficient balance......................");
+            return;
         }
     }
 }
@@ -112,7 +114,6 @@ class ATMService {
         }
         ATM atm = atmRepository.getATM(card.getAtmPin());
         atm.withdrawAmount(amount);
-        System.out.println("Amount withdrawn successfully...................... " + amount);
     }
 }
 
@@ -137,33 +138,38 @@ public class Main {
                     int atmId = sc.nextInt();
                     System.out.println("Enter your pin for login");
                     int pin = sc.nextInt();
+                    boolean isLogin = false;
 
                     Card card = new Card(pin, atmId);
                     if (auth.authenticate(card, pin)) {
                         System.out.println("You have successFully Login...");
-                        System.out.println("1, Deposite");
-                        System.out.println("2, Withdraw");
-                        System.out.println("3, Exit");
-                        int choice2 = sc.nextInt();
-                        switch (choice2) {
+                        isLogin = true;
+                        while (isLogin) {
+                            System.out.println("1, Deposite");
+                            System.out.println("2, Withdraw");
+                            System.out.println("3, Exit");
+                            int choice2 = sc.nextInt();
+                            switch (choice2) {
 
-                            case 1 -> {
-                                System.out.println("Enter the amount you want to deposite");
-                                int amount = sc.nextInt();
-                                ATMService atmService = new ATMService(atmRepo, auth);
-                                atmService.deposite(card, pin, amount);
-                            }
-                            case 2 -> {
-                                System.out.println("Enter the amount you want to withdraw");
-                                int amount = sc.nextInt();
-                                ATMService atmService = new ATMService(atmRepo, auth);
-                                atmService.withdraw(card, pin, amount);
-                            }
-                            case 3 -> {
-                                System.out.println("You have successfully logged out...");
-                                break;
+                                case 1 -> {
+                                    System.out.println("Enter the amount you want to deposite");
+                                    int amount = sc.nextInt();
+                                    ATMService atmService = new ATMService(atmRepo, auth);
+                                    atmService.deposite(card, pin, amount);
+                                }
+                                case 2 -> {
+                                    System.out.println("Enter the amount you want to withdraw");
+                                    int amount = sc.nextInt();
+                                    ATMService atmService = new ATMService(atmRepo, auth);
+                                    atmService.withdraw(card, pin, amount);
+                                }
+                                case 3 -> {
+                                    System.out.println("You have successfully logged out...");
+                                    break;
+                                }
                             }
                         }
+
                     }
                 }
                 case 2 -> {
@@ -178,31 +184,35 @@ public class Main {
                     ATM atm = new ATM(atmId, intialAmount);
 
                     atmRepo.saveATM(atm);
-                    System.out.println("You have successfully registered with initial amount of " + intialAmount);
+                    boolean isRegistered = false;
 
                     if (auth.authenticate(card, pin)) {
-                        System.out.println("You have successFully Login...");
-                        System.out.println("1, Deposite");
-                        System.out.println("2, Withdraw");
-                        System.out.println("3, Exit");
-                        int choice2 = sc.nextInt();
-                        switch (choice2) {
+                        System.out.println("You have successfully registered with initial amount of " + intialAmount);
+                        isRegistered = true;
 
-                            case 1 -> {
-                                System.out.println("Enter the amount you want to deposite");
-                                int amount = sc.nextInt();
-                                ATMService atmService = new ATMService(atmRepo, auth);
-                                atmService.deposite(card, pin, amount);
-                            }
-                            case 2 -> {
-                                System.out.println("Enter the amount you want to withdraw");
-                                int amount = sc.nextInt();
-                                ATMService atmService = new ATMService(atmRepo, auth);
-                                atmService.withdraw(card, pin, amount);
-                            }
-                            case 3 -> {
-                                System.out.println("You have successfully logged out...");
-                                break;
+                        while (isRegistered) {
+                            System.out.println("1, Deposite");
+                            System.out.println("2, Withdraw");
+                            System.out.println("3, Exit");
+                            int choice2 = sc.nextInt();
+                            switch (choice2) {
+
+                                case 1 -> {
+                                    System.out.println("Enter the amount you want to deposite");
+                                    int amount = sc.nextInt();
+                                    ATMService atmService = new ATMService(atmRepo, auth);
+                                    atmService.deposite(card, pin, amount);
+                                }
+                                case 2 -> {
+                                    System.out.println("Enter the amount you want to withdraw");
+                                    int amount = sc.nextInt();
+                                    ATMService atmService = new ATMService(atmRepo, auth);
+                                    atmService.withdraw(card, pin, amount);
+                                }
+                                case 3 -> {
+                                    System.out.println("You have successfully logged out...");
+                                    break;
+                                }
                             }
                         }
                     }
