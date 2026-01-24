@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Scanner;
 
 class ATM {
     private int id;
@@ -20,6 +21,15 @@ class ATM {
     void addAmount(int amount) {
 
         this.balance += amount;
+    }
+
+    void withdrawAmount(int amount) {
+        if (this.balance >= amount) {
+            this.balance -= amount;
+            System.out.println("Amount withdrawn successfully...................... " + amount);
+        } else {
+            System.out.println("Insufficient balance......................");
+        }
     }
 }
 
@@ -94,23 +104,112 @@ class ATMService {
         atm.addAmount(amount);
         System.out.println("Amount deposited successfully...................... " + amount);
     }
+
+    public void withdraw(Card card, int pin, int amount) {
+        if (!atmAuthentification.authenticate(card, pin)) {
+            System.out.println("Wrong Pin please enter the correct pin......................");
+            return;
+        }
+        ATM atm = atmRepository.getATM(card.getAtmPin());
+        atm.withdrawAmount(amount);
+        System.out.println("Amount withdrawn successfully...................... " + amount);
+    }
 }
 
 public class Main {
     public static void main(String[] args) {
 
-        ATMRepository DighwaBranch = new DighwaDubauliBranch();
-        ATM atm = new ATM(1, 995523);
+        Scanner sc = new Scanner(System.in);
 
-        DighwaBranch.saveATM(atm);
-        System.out.println(DighwaBranch.getATM(1).getBalance());
+        ATMRepository atmRepo = new DighwaDubauliBranch(); // ✅ ONE INSTANCE
+        ATMAuthentification auth = new ATMAuthByPin(); // ✅ ONE INSTANCE
 
-        ATMAuthentification auth = new ATMAuthByPin();
-        Card card = new Card(1265, 1);
+        while (true) {
+            System.out.println("Would you like to get you account login or you already have count to Login");
+            System.out.println("1, Login");
+            System.out.println("2, Register");
+            System.out.println("3, Exit");
+            int choice = sc.nextInt();
 
-        ATMService atmService = new ATMService(DighwaBranch, auth);
+            switch (choice) {
+                case 1 -> {
+                    System.out.println("Enter you ATM id first");
+                    int atmId = sc.nextInt();
+                    System.out.println("Enter your pin for login");
+                    int pin = sc.nextInt();
 
-        atmService.deposite(card, 126, 5000);
+                    Card card = new Card(pin, atmId);
+                    if (auth.authenticate(card, pin)) {
+                        System.out.println("You have successFully Login...");
+                        System.out.println("1, Deposite");
+                        System.out.println("2, Withdraw");
+                        System.out.println("3, Exit");
+                        int choice2 = sc.nextInt();
+                        switch (choice2) {
+
+                            case 1 -> {
+                                System.out.println("Enter the amount you want to deposite");
+                                int amount = sc.nextInt();
+                                ATMService atmService = new ATMService(atmRepo, auth);
+                                atmService.deposite(card, pin, amount);
+                            }
+                            case 2 -> {
+                                System.out.println("Enter the amount you want to withdraw");
+                                int amount = sc.nextInt();
+                                ATMService atmService = new ATMService(atmRepo, auth);
+                                atmService.withdraw(card, pin, amount);
+                            }
+                            case 3 -> {
+                                System.out.println("You have successfully logged out...");
+                                break;
+                            }
+                        }
+                    }
+                }
+                case 2 -> {
+                    System.out.println("Enter you ATM id first");
+                    int atmId = sc.nextInt();
+                    System.out.println("Enter your pin for login");
+                    int pin = sc.nextInt();
+
+                    Card card = new Card(pin, atmId);
+                    System.out.println("please enter initial amount : ");
+                    int intialAmount = sc.nextInt();
+                    ATM atm = new ATM(atmId, intialAmount);
+
+                    atmRepo.saveATM(atm);
+                    System.out.println("You have successfully registered with initial amount of " + intialAmount);
+
+                    if (auth.authenticate(card, pin)) {
+                        System.out.println("You have successFully Login...");
+                        System.out.println("1, Deposite");
+                        System.out.println("2, Withdraw");
+                        System.out.println("3, Exit");
+                        int choice2 = sc.nextInt();
+                        switch (choice2) {
+
+                            case 1 -> {
+                                System.out.println("Enter the amount you want to deposite");
+                                int amount = sc.nextInt();
+                                ATMService atmService = new ATMService(atmRepo, auth);
+                                atmService.deposite(card, pin, amount);
+                            }
+                            case 2 -> {
+                                System.out.println("Enter the amount you want to withdraw");
+                                int amount = sc.nextInt();
+                                ATMService atmService = new ATMService(atmRepo, auth);
+                                atmService.withdraw(card, pin, amount);
+                            }
+                            case 3 -> {
+                                System.out.println("You have successfully logged out...");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
 
     }
 }
