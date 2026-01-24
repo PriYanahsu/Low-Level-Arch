@@ -2,16 +2,22 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 class ATM {
-    private int id;
+    private int accId;
     private int balance;
+    private int pin;
 
-    ATM(int id, int balance) {
-        this.id = id;
+    ATM(int accId, int balance, int pin) {
+        this.accId = accId;
         this.balance = balance;
+        this.pin = pin;
     }
 
-    public int getId() {
-        return id;
+    public int getAccId() {
+        return accId;
+    }
+
+    public int getPin() {
+        return pin;
     }
 
     int getBalance() {
@@ -20,7 +26,12 @@ class ATM {
 
     void addAmount(int amount) {
 
+        if (amount < 0) {
+            System.out.println("Invalid amount please enter the correct amount......................");
+            return;
+        }
         this.balance += amount;
+        System.out.println("Amount deposited successfully...................... " + amount);
     }
 
     void withdrawAmount(int amount) {
@@ -30,33 +41,26 @@ class ATM {
             return;
         } else {
             System.out.println("Insufficient balance......................");
-            return;
         }
     }
 }
 
 class Card {
-    private int pin;
-    private int atmId;
+    private int accId;
 
-    Card(int pin, int atmId) {
-        this.pin = pin;
-        this.atmId = atmId;
+    Card(int accId) {
+        this.accId = accId;
     }
 
-    int getPin() {
-        return pin;
-    }
-
-    int getAtmPin() {
-        return atmId;
+    int getAccId() {
+        return accId;
     }
 }
 
 interface ATMRepository {
-    void saveATM(ATM atm);
+    void saveAcc(ATM atm);
 
-    ATM getATM(int id);
+    ATM getAccId(int id);
 }
 
 class DighwaDubauliBranch implements ATMRepository {
@@ -64,12 +68,12 @@ class DighwaDubauliBranch implements ATMRepository {
     HashMap<Integer, ATM> atmMap = new HashMap<>();
 
     @Override
-    public void saveATM(ATM atm) {
-        atmMap.put(atm.getId(), atm);
+    public void saveAcc(ATM atm) {
+        atmMap.put(atm.getAccId(), atm);
     }
 
     @Override
-    public ATM getATM(int id) {
+    public ATM getAccId(int id) {
         return atmMap.get(id);
     }
 }
@@ -80,9 +84,16 @@ interface ATMAuthentification {
 
 class ATMAuthByPin implements ATMAuthentification {
 
+    private final ATMRepository atmRepository;
+
+    ATMAuthByPin(ATMRepository atmRepository) {
+        this.atmRepository = atmRepository;
+    }
+
     @Override
     public boolean authenticate(Card card, int enteredPin) {
-        return card.getPin() == enteredPin;
+        ATM atm = atmRepository.getAccId(card.getAccId());
+        return atm.getPin() == enteredPin;
     }
 
 }
@@ -102,9 +113,8 @@ class ATMService {
             System.out.println("Wrong Pin please enter the correct pin......................");
             return;
         }
-        ATM atm = atmRepository.getATM(card.getAtmPin());
+        ATM atm = atmRepository.getAccId(card.getAccId());
         atm.addAmount(amount);
-        System.out.println("Amount deposited successfully...................... " + amount);
     }
 
     public void withdraw(Card card, int pin, int amount) {
@@ -112,7 +122,7 @@ class ATMService {
             System.out.println("Wrong Pin please enter the correct pin......................");
             return;
         }
-        ATM atm = atmRepository.getATM(card.getAtmPin());
+        ATM atm = atmRepository.getAccId(card.getAccId());
         atm.withdrawAmount(amount);
     }
 }
@@ -122,8 +132,9 @@ public class Main {
 
         Scanner sc = new Scanner(System.in);
 
-        ATMRepository atmRepo = new DighwaDubauliBranch(); // ✅ ONE INSTANCE
-        ATMAuthentification auth = new ATMAuthByPin(); // ✅ ONE INSTANCE
+        ATMRepository atmRepo = new DighwaDubauliBranch(); // ONE INSTANCE
+        ATMAuthentification auth = new ATMAuthByPin(atmRepo); // ONE INSTANCE
+        ATMService atmService = new ATMService(atmRepo, auth); // ONE INSTANCE
 
         while (true) {
             System.out.println("Would you like to get you account login or you already have count to Login");
@@ -140,7 +151,7 @@ public class Main {
                     int pin = sc.nextInt();
                     boolean isLogin = false;
 
-                    Card card = new Card(pin, atmId);
+                    Card card = new Card(atmId);
                     if (auth.authenticate(card, pin)) {
                         System.out.println("You have successFully Login...");
                         isLogin = true;
@@ -154,13 +165,11 @@ public class Main {
                                 case 1 -> {
                                     System.out.println("Enter the amount you want to deposite");
                                     int amount = sc.nextInt();
-                                    ATMService atmService = new ATMService(atmRepo, auth);
                                     atmService.deposite(card, pin, amount);
                                 }
                                 case 2 -> {
                                     System.out.println("Enter the amount you want to withdraw");
                                     int amount = sc.nextInt();
-                                    ATMService atmService = new ATMService(atmRepo, auth);
                                     atmService.withdraw(card, pin, amount);
                                 }
                                 case 3 -> {
@@ -178,12 +187,11 @@ public class Main {
                     System.out.println("Enter your pin for login");
                     int pin = sc.nextInt();
 
-                    Card card = new Card(pin, atmId);
+                    Card card = new Card(atmId);
                     System.out.println("please enter initial amount : ");
                     int intialAmount = sc.nextInt();
-                    ATM atm = new ATM(atmId, intialAmount);
 
-                    atmRepo.saveATM(atm);
+                    atmRepo.saveAcc(new ATM(atmId, intialAmount, pin));
                     boolean isRegistered = false;
 
                     if (auth.authenticate(card, pin)) {
@@ -200,13 +208,11 @@ public class Main {
                                 case 1 -> {
                                     System.out.println("Enter the amount you want to deposite");
                                     int amount = sc.nextInt();
-                                    ATMService atmService = new ATMService(atmRepo, auth);
                                     atmService.deposite(card, pin, amount);
                                 }
                                 case 2 -> {
                                     System.out.println("Enter the amount you want to withdraw");
                                     int amount = sc.nextInt();
-                                    ATMService atmService = new ATMService(atmRepo, auth);
                                     atmService.withdraw(card, pin, amount);
                                 }
                                 case 3 -> {
